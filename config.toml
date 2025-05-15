@@ -1,6 +1,6 @@
-baseurl = "https://hugotion.github.io/j57ey9mbfxe2ek8f4010hcwwe17fy4sn/"
+baseurl = "/"
 languageCode = "en-us"
-theme = "terminal"
+theme = "hugo-theme-terminal"
 pagination.pagerSize = 5
 
 [markup.goldmark.renderer]
