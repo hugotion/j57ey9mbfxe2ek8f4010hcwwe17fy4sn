@@ -1,0 +1,73 @@
+
+name: Setup Hugo
+
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-hugo:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure Git user
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+
+    - name: Add theme as subtree
+      run: |
+        git subtree add --prefix=themes/terminal https://github.com/panr/hugo-theme-terminal.git master --squash
+
+    - name: Copy example site content if exists
+      run: |
+        if [ -d "themes/terminal/exampleSite" ]; then
+          cp -r themes/terminal/exampleSite/* ./
+          rm -f go.mod go.sum
+        else
+          # Create basic Hugo site structure if no example site
+          mkdir -p content/posts
+          mkdir -p static/images
+          echo "---\ntitle: 'Welcome'\ndate: $(date +%Y-%m-%d)\n---\n\nWelcome to your new Hugo site!" > content/posts/welcome.md
+        fi
+
+    - name: Modify configuration
+      run: |
+        if [ -f "config.toml" ]; then
+          sed -i "s|^theme *= *.*|theme = \"terminal\"|" config.toml
+        else
+          # Create basic config.toml if it doesn't exist
+          cat > config.toml << EOL
+          baseURL = "/"
+          languageCode = "en-us"
+          title = "My New Hugo Site"
+          theme = "terminal"
+
+          [params]
+            # Add any theme-specific parameters here
+        EOL
+        fi
+      
+    - name: Delete Workflow File
+      run: |
+        rm .github/workflows/hugo-setup.yml
+
+    - name: Commit and push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git add .
+        git commit -m "Initial setup with terminal theme"
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/hugotion/${{ github.event.repository.name }}.git main
+
+    - name: Workflow Webhook Action
+      uses: distributhor/workflow-webhook@v3
+      with:
+        webhook_url: 'https://cool-pelican-27.convex.site/callbackPageDeployed'
+        webhook_auth_type: "bearer"
+        webhook_auth: ${{ secrets.CALLBACK_BEARER }}
+        data: '{ "workflowRunning": false }'
