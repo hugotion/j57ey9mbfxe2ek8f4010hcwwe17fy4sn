@@ -1,3 +1,6 @@
+---
+sha: bf6a26e035622f77fb1e8a90d05284117fbdc88a
+---
 +++
 author = "Hugo Authors & Radek"
 title = "Showcase"
